@@ -79,7 +79,7 @@ subroutine IST_WaveToy_calc_rhs( CCTK_ARGUMENTS )
      ! if (i == 4 .and. j == 4) then
      !    write(*,*) "bulk"
      !    write(*,*) "i,j,k = ", i,j,k
-     !    write (*,*) ite(*,*) "x,y,z = ", x(i,j,k), y(i,j,k), z(i,j,k)
+     !    write(*,*) "x,y,z = ", x(i,j,k), y(i,j,k), z(i,j,k)
      !    write(*,*) ""
      ! end if
 
