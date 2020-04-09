@@ -1,0 +1,121 @@
+
+implements: IST_WaveToy
+inherits: grid Boundary SummationByParts
+
+CCTK_INT FUNCTION                        \
+    Boundary_SelectVarForBC            \
+        (CCTK_POINTER_TO_CONST IN GH,    \
+         CCTK_INT IN faces,              \
+         CCTK_INT IN boundary_width,     \
+         CCTK_INT IN table_handle,       \
+         CCTK_STRING IN var_name,      \
+         CCTK_STRING IN bc_name)
+REQUIRES FUNCTION Boundary_SelectVarForBC
+
+CCTK_INT FUNCTION                        \
+    Boundary_SelectGroupForBC            \
+        (CCTK_POINTER_TO_CONST IN GH,    \
+         CCTK_INT IN faces,              \
+         CCTK_INT IN boundary_width,     \
+         CCTK_INT IN table_handle,       \
+         CCTK_STRING IN group_name,      \
+         CCTK_STRING IN bc_name)
+REQUIRES FUNCTION Boundary_SelectGroupForBC
+
+#########################################
+###  Aliased functions from Carpet    ###
+#########################################
+
+CCTK_INT FUNCTION                         \
+    GetRefinementLevel                    \
+        (CCTK_POINTER_TO_CONST IN cctkGH)
+USES FUNCTION GetRefinementLevel
+
+CCTK_INT FUNCTION                         \
+    MultiPatch_GetMap
+        (CCTK_POINTER_TO_CONST IN cctkGH)
+USES FUNCTION MultiPatch_GetMap
+
+# Convenient way to determine boundary sizes
+CCTK_INT FUNCTION GetBoundarySizesAndTypes \
+  (CCTK_POINTER_TO_CONST IN cctkGH, \
+   CCTK_INT IN size, \
+   CCTK_INT OUT ARRAY bndsize, \
+   CCTK_INT OUT ARRAY is_ghostbnd, \
+   CCTK_INT OUT ARRAY is_symbnd, \
+   CCTK_INT OUT ARRAY is_physbnd)
+REQUIRES FUNCTION GetBoundarySizesAndTypes
+
+####################################################
+###  Functions provided by MoL for registration  ###
+####################################################
+
+CCTK_INT FUNCTION MoLRegisterEvolved(CCTK_INT IN EvolvedIndex, \
+                                     CCTK_INT IN RHSIndex)
+CCTK_INT FUNCTION MoLRegisterEvolvedGroup(CCTK_INT IN EvolvedIndex, \
+                                          CCTK_INT IN RHSIndex)
+CCTK_INT FUNCTION MoLRegisterSaveAndRestoreGroup(CCTK_INT IN SandRIndex)
+CCTK_INT FUNCTION MoLRegisterConstrainedGroup(CCTK_INT IN ConstrainedIndex)
+
+USES FUNCTION MoLRegisterEvolved
+USES FUNCTION MoLRegisterEvolvedGroup
+USES FUNCTION MoLRegisterSaveAndRestoreGroup
+USES FUNCTION MoLRegisterConstrainedGroup
+
+
+####################################################
+###  Functions provided by SummationByParts      ###
+####################################################
+
+SUBROUTINE Diff_coeff ( CCTK_POINTER_TO_CONST IN cctkGH, \
+                        CCTK_INT IN dir, \
+                        CCTK_INT IN nsize, \
+                        CCTK_INT OUT ARRAY imin, \
+                        CCTK_INT OUT ARRAY imax, \
+                        CCTK_REAL OUT ARRAY q, \
+                        CCTK_INT IN table_handle )
+USES FUNCTION Diff_coeff
+
+SUBROUTINE Diff2_coeff ( CCTK_POINTER_TO_CONST IN cctkGH, \
+                         CCTK_INT IN dir, \
+                         CCTK_INT IN nsize, \
+                         CCTK_INT OUT ARRAY imin, \
+                         CCTK_INT OUT ARRAY imax, \
+                         CCTK_REAL OUT ARRAY q, \
+                         CCTK_INT IN table_handle )
+USES FUNCTION Diff2_coeff
+
+# SUBROUTINE Diff_up_coeff ( CCTK_POINTER_TO_CONST IN cctkGH, \
+#                            CCTK_INT IN dir, \
+#                            CCTK_INT IN nsize, \
+#                            CCTK_INT OUT ARRAY imin, \
+#                            CCTK_INT OUT ARRAY imax, \
+#                            CCTK_REAL OUT ARRAY q, \
+#                            CCTK_INT IN up, \
+#                            CCTK_INT IN table_handle )
+# USES FUNCTION Diff_up_coeff
+
+
+
+public:
+
+CCTK_REAL phi type=gf timelevels=3 tags='tensortypealias="Scalar" tensorweight=0'
+{
+  phi
+} "scalar fields"
+
+CCTK_REAL Kphi type=gf timelevels=3 tags='tensortypealias="Scalar" tensorweight=0'
+{
+  Kphi
+} "their conjugated momenta"
+
+
+CCTK_REAL rhs_phi type=gf tags='tensortypealias="Scalar" tensorweight=0 prolongation="none" Checkpoint="no"'
+{
+  rhs_phi
+} "right hand sides for scalar field evolution equations"
+
+CCTK_REAL rhs_Kphi type=gf tags='tensortypealias="Scalar" tensorweight=0 prolongation="none" Checkpoint="no"'
+{
+  rhs_Kphi
+} "right hand sides for evolution of conjugated momenta"

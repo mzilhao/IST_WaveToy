@@ -1,0 +1,62 @@
+
+STORAGE: phi[3] Kphi[3]
+STORAGE: rhs_phi rhs_Kphi
+
+schedule IST_WaveToy_InitSymBound at BASEGRID
+{
+  LANG: Fortran
+  OPTIONS: META
+} "Schedule symmetries"
+
+schedule IST_WaveToy_zero_rhs at BASEGRID after IST_WaveToy_InitSymBound
+{
+  LANG: Fortran
+} "set all rhs functions to zero to prevent spurious nans"
+
+schedule IST_WaveToy_RegisterVars in MoL_Register
+{
+  LANG: C
+  OPTIONS: META
+} "Register variables for MoL"
+
+
+if (CCTK_Equals(initial_scalar, "gaussian"))
+{
+  SCHEDULE IST_WaveToy_init at CCTK_INITIAL
+  {
+    LANG: C
+  } ""
+}
+
+if (CCTK_Equals(initial_scalar, "testing"))
+{
+  SCHEDULE IST_WaveToy_testID at CCTK_INITIAL
+  {
+    LANG: Fortran
+    SYNC: IST_WaveToy::Kphi
+  } ""
+}
+
+schedule IST_WaveToy_calc_rhs IN MoL_CalcRHS
+{
+  LANG: Fortran
+} "MoL RHS calculation for Scalar variables"
+
+schedule IST_WaveToy_calc_rhs_bdry in MoL_RHSBoundaries
+{
+  LANG: Fortran
+  SYNC: IST_WaveToy::rhs_phi
+  SYNC: IST_WaveToy::rhs_Kphi
+} "MoL boundary RHS calculation for Scalar variables"
+
+schedule IST_WaveToy_Boundaries in MoL_PostStep
+{
+  LANG: Fortran
+  OPTIONS: LEVEL
+  SYNC: IST_WaveToy::phi
+  SYNC: IST_WaveToy::Kphi
+} "MoL boundary enforcement for Scalar variables"
+
+schedule GROUP ApplyBCs as IST_WaveToy_ApplyBCs in MoL_PostStep after IST_Scalar_Boundaries
+{
+} "Apply boundary conditions"

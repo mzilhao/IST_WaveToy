@@ -1,0 +1,43 @@
+
+shares: Coordinates
+USES keyword coordinate_system
+
+shares: MethodOfLines
+USES CCTK_INT MoL_Num_Evolved_Vars
+USES CCTK_INT MoL_Num_Constrained_Vars
+USES CCTK_INT MoL_Num_SaveAndRestore_Vars
+
+
+restricted:
+
+CCTK_INT IST_ScalarEvolve_MaxNumEvolvedVars "The maximum number of evolved variables" ACCUMULATOR-BASE=MethodofLines::MoL_Num_Evolved_Vars
+{
+  2:2           :: "Just 2: phi, Kphi"
+} 2
+
+CCTK_INT IST_ScalarEvolve_MaxNumConstrainedVars "The maximum number of constrained variables" ACCUMULATOR-BASE=MethodofLines::MoL_Num_Constrained_Vars
+{
+  0:0           :: "none"
+} 0
+
+CCTK_INT IST_ScalarEvolve_MaxNumSandRVars "The maximum number of save and restore variables" ACCUMULATOR-BASE=MethodofLines::MoL_Num_SaveAndRestore_Vars
+{
+  0:0           :: "none"
+} 0
+
+KEYWORD initial_scalar "initial data for scalar variables"
+{
+  "none"              :: "scalar variables are not initialized"
+  "gaussian"          :: "a gaussian profile"
+  "testing"           :: "to test things"
+} "none"
+
+CCTK_REAL sigma_g "gaussian width for phi for gaussian profile"
+{
+  (0:* :: "any positive number"
+} 0.1
+
+CCTK_REAL R0pert_g "radius of perturbation for gaussian profile"
+{
+  *:* :: "any real number"
+} 0.0

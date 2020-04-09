@@ -1,0 +1,12 @@
+
+# Source files in this directory
+SRCS = IST_WaveToy_init.c               \
+       IST_WaveToy_testID.F90           \
+       IST_WaveToy_InitSymBound.F90     \
+       IST_WaveToy_RegisterVars.c       \
+       IST_WaveToy_Boundaries.F90       \
+       IST_WaveToy_calc_rhs.F90         \
+       IST_WaveToy_zero_rhs.F90
+
+# Subdirectories containing source files
+SUBDIRS =

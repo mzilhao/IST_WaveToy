@@ -1,0 +1,317 @@
+
+#------------------------------------------------------------------------------
+ActiveThorns = "
+  # AEILocalInterp
+  Boundary
+  Carpet
+  CarpetInterp
+  CarpetIOASCII
+  CarpetIOBasic
+  CarpetIOHDF5
+  CarpetIOScalar
+  CarpetLib
+  CarpetMask
+  CarpetReduce
+  CarpetRegrid2
+  CarpetSlab
+  # CarpetTracker
+  CartGrid3D
+  CoordBase
+  Dissipation
+  # Formaline
+  Fortran
+  GenericFD
+  GSL
+  HDF5
+  InitBase
+  IOUtil
+  IST_WaveToy
+  LocalInterp
+  LoopControl
+  MoL
+  # Multipole
+  NaNChecker
+  # NewRad
+  ReflectionSymmetry
+  # RotatingSymmetry90
+  # RotatingSymmetry180
+  Slab
+  SpaceMask
+  # Sphere
+  SphericalSurface
+  SummationByParts
+  SymBase
+  SystemStatistics
+  TerminationTrigger
+  Time
+  TimerReport
+"
+#------------------------------------------------------------------------------
+
+
+# Grid setup
+#------------------------------------------------------------------------------
+
+CartGrid3D::type                     = "coordbase"
+Carpet::domain_from_coordbase        = yes
+CoordBase::domainsize                = "minmax"
+
+# make sure all (xmax - xmin)/dx are integers!
+CoordBase::xmin                      = -32.00
+CoordBase::ymin                      = -32.00
+CoordBase::zmin                      =   0.00
+CoordBase::xmax                      = +32.00
+CoordBase::ymax                      = +32.00
+CoordBase::zmax                      = +32.00
+CoordBase::dx                        =   1.00
+CoordBase::dy                        =   1.00
+CoordBase::dz                        =   1.00
+
+driver::ghost_size                   = 3
+
+CoordBase::boundary_size_x_lower     = 1
+CoordBase::boundary_size_y_lower     = 1
+CoordBase::boundary_size_z_lower     = 3
+CoordBase::boundary_size_x_upper     = 1
+CoordBase::boundary_size_y_upper     = 1
+CoordBase::boundary_size_z_upper     = 1
+
+CoordBase::boundary_shiftout_x_lower = 0
+CoordBase::boundary_shiftout_y_lower = 0
+CoordBase::boundary_shiftout_z_lower = 1
+
+CarpetRegrid2::symmetry_rotating180  = no
+
+ReflectionSymmetry::reflection_x     = no
+ReflectionSymmetry::reflection_y     = no
+ReflectionSymmetry::reflection_z     = yes
+ReflectionSymmetry::avoid_origin_x   = yes
+ReflectionSymmetry::avoid_origin_y   = yes
+ReflectionSymmetry::avoid_origin_z   = no
+
+
+# Mesh refinement
+#------------------------------------------------------------------------------
+
+Carpet::max_refinement_levels           = 3
+
+CarpetRegrid2::num_centres              = 1
+
+CarpetRegrid2::num_levels_1             = 3
+CarpetRegrid2::radius_1[1]              = 16.0
+CarpetRegrid2::radius_1[2]              =  8.0
+
+Carpet::use_buffer_zones                = yes
+Carpet::prolongation_order_space        = 5
+Carpet::prolongation_order_time         = 2
+
+CarpetRegrid2::freeze_unaligned_levels  = yes
+CarpetRegrid2::regrid_every             = 0
+
+CarpetRegrid2::verbose                  = no
+
+Carpet::grid_structure_filename         = "carpet-grid-structure"
+Carpet::grid_coordinates_filename       = "carpet-grid-coordinates"
+
+# Carpet::time_refinement_factors         = "[1, 2, 4, 8, 16, 32, 64, 128]"
+
+Time::dtfac                             = 0.4
+
+
+# Initial data
+#------------------------------------------------------------------------------
+
+# initial data thorn sets up data on exactly one time level, and is called once
+# for each active time level (initial data thorn can only access the current
+# time level). to be used with Carpet::init_each_timelevel = yes parameter.
+InitBase::initial_data_setup_method   = "init_single_level"
+Carpet::init_fill_timelevels          = no
+Carpet::init_3_timelevels             = no
+Carpet::init_each_timelevel           = yes
+
+
+IST_WaveToy::initial_scalar        = "gaussian"
+
+# IST_WaveToy::sigma_g                  =  2.0
+IST_WaveToy::sigma_g                  = 10.0
+IST_WaveToy::R0pert_g                 = 12.0
+
+
+# Evolution
+#------------------------------------------------------------------------------
+
+IST_WaveToy::evolution_method  = "IST_WaveToy"
+
+
+# Spatial finite differencing
+#------------------------------------------------------------------------------
+
+# SummationByParts::order                              = 2
+SummationByParts::order                              = 6
+
+SummationByParts::sbp_1st_deriv                      = yes
+SummationByParts::sbp_2nd_deriv                      = yes
+SummationByParts::onesided_interpatch_boundaries     = yes
+SummationByParts::onesided_outer_boundaries          = yes
+SummationByParts::use_dissipation                    = no
+# GlobalDerivative::use_dissipation                    = no
+# SummationByParts::scale_with_h                       = yes
+# SummationByParts::dissipation_type                   = "Kreiss-Oliger"
+# SummationByParts::epsdis                             = 0.15
+
+# Variables for dissipation
+# SummationByParts::vars                               = "
+#   IST_WaveToy::phi
+#   IST_WaveToy::Kphi
+# "
+
+
+# Integration method
+#------------------------------------------------------------------------------
+
+MoL::ODE_Method                 = "RK4"
+MoL::MoL_Intermediate_Steps     = 4
+MoL::MoL_Num_Scratch_Levels     = 1
+
+Carpet::num_integrator_substeps = 4
+
+
+# Check for NaNs
+#-------------------------------------------------------------------------------
+
+Carpet::poison_new_timelevels = yes
+CarpetLib::poison_new_memory  = yes
+Carpet::check_for_poison      = no
+
+NaNChecker::check_every     = 16
+NanChecker::check_after     = 0
+NaNChecker::report_max      = 10
+# NaNChecker::verbose         = "all"
+NaNChecker::action_if_found = "terminate"
+NaNChecker::out_NaNmask     = yes
+NaNChecker::check_vars      = "
+   IST_WaveToy::phi
+   IST_WaveToy::Kphi
+"
+
+
+# Timers
+#-------------------------------------------------------------------------------
+
+Cactus::cctk_timer_output               = "full"
+TimerReport::out_every                  = 5120
+TimerReport::n_top_timers               = 40
+TimerReport::output_all_timers_together = yes
+TimerReport::output_all_timers_readable = yes
+TimerReport::output_schedule_timers     = no
+
+
+# I/O thorns
+#-------------------------------------------------------------------------------
+
+Cactus::cctk_run_title       = $parfile
+IO::out_dir                  = $parfile
+
+IOScalar::one_file_per_group = yes
+IOASCII::one_file_per_group  = yes
+
+IOHDF5::use_checksums        = no
+IOHDF5::one_file_per_group   = no
+
+IOBasic::outInfo_every       = 1
+IOBasic::outInfo_reductions  = "minimum maximum norm2"
+IOBasic::outInfo_vars        = "
+  Carpet::physical_time_per_hour
+  IST_WaveToy::phi
+  SystemStatistics::maxrss_mb
+"
+
+# for scalar reductions of 3D grid functions
+IOScalar::outScalar_every               = 4
+IOScalar::outScalar_reductions          = "minimum maximum average norm2"
+IOScalar::outScalar_vars                = "
+  IST_WaveToy::phi
+"
+
+# output just at one point (0D)
+IOASCII::out0D_every    = 64
+IOASCII::out0D_point_x  = 4.0
+IOASCII::out0D_point_y  = 0.0
+IOASCII::out0D_vars  = "
+  IST_WaveToy::phi
+  IST_WaveToy::Kphi
+"
+
+IOASCII::output_symmetry_points = yes
+IOASCII::out3D_ghosts           = yes
+
+# 1D text output
+IOASCII::out1D_every            = 1
+IOASCII::out1D_d                = no
+IOASCII::out1D_x                = yes
+IOASCII::out1D_y                = no
+IOASCII::out1D_z                = yes
+IOASCII::out1D_vars             = "
+  IST_WaveToy::phi
+  IST_WaveToy::Kphi
+  IST_WaveToy::rhs_phi
+  IST_WaveToy::rhs_Kphi
+"
+
+# 2D HDF5 output
+IOHDF5::out2D_every             = 16
+IOHDF5::out2D_xy                = yes
+IOHDF5::out2D_xz                = no
+IOHDF5::out2D_yz                = yes
+IOHDF5::out2D_vars              = "
+  IST_WaveToy::phi
+  IST_WaveToy::Kphi
+"
+
+# # 3D HDF5 output
+# IOHDF5::out_every                      = 8192
+# IOHDF5::out_vars                       = "
+# "
+
+Carpet::verbose                    = no
+Carpet::veryverbose                = no
+Carpet::schedule_barriers          = no
+Carpet::storage_verbose            = no
+CarpetLib::output_bboxes           = no
+
+Cactus::cctk_full_warnings         = yes
+Cactus::highlight_warning_messages = no
+
+
+# Checkpointing and recovery
+#-------------------------------------------------------------------------------
+
+CarpetIOHDF5::checkpoint             = no
+IO::checkpoint_dir                   = "../checkpoints"
+# IO::checkpoint_ID                    = yes
+IO::checkpoint_ID                    = no
+IO::checkpoint_every_walltime_hours  = 23
+IO::checkpoint_on_terminate          = yes
+IO::out_proc_every                   = 2
+IO::checkpoint_keep                  = 1
+
+IO::recover                          = "autoprobe"
+IO::recover_dir                      = "../checkpoints"
+
+IO::abort_on_io_errors                      = yes
+CarpetIOHDF5::open_one_input_file_at_a_time = yes
+CarpetIOHDF5::compression_level             = 9
+
+
+# Run termination
+#-------------------------------------------------------------------------------
+
+TerminationTrigger::max_walltime                 = 72 # hours
+TerminationTrigger::on_remaining_walltime        = 60 # minutes
+TerminationTrigger::output_remtime_every_minutes = 60
+TerminationTrigger::termination_from_file        = yes
+TerminationTrigger::termination_file             = "terminate.txt"
+TerminationTrigger::create_termination_file      = yes
+
+Cactus::terminate       = "time"
+Cactus::cctk_final_time = 200.0
