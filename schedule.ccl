@@ -57,6 +57,6 @@ schedule IST_WaveToy_Boundaries in MoL_PostStep
   SYNC: IST_WaveToy::Kphi
 } "MoL boundary enforcement for Scalar variables"
 
-schedule GROUP ApplyBCs as IST_WaveToy_ApplyBCs in MoL_PostStep after IST_Scalar_Boundaries
+schedule GROUP ApplyBCs as IST_WaveToy_ApplyBCs in MoL_PostStep after IST_WaveToy_Boundaries
 {
 } "Apply boundary conditions"
